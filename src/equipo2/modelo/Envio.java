@@ -49,4 +49,12 @@ public abstract class Envio {
      * La selección NORMAL/BENEFICIO se aplica al importe base calculado.
      * No se entrega implementación de cálculo ni uso polimórfico.
      */
+    public abstract double calcularImporte();
+
+    /**
+     * Punto de entrada principal para ejecutar la aplicación externa desde la clase padre.
+     */
+    public static void main(String[] args) {
+        equipo2.vista.EnvioApp.main(args);
+    }
 }

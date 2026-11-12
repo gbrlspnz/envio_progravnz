@@ -26,4 +26,8 @@ public class EnvioLocal extends Envio {
      * Sobrescribir el contrato que el equipo agregue a la clase padre.
      * Este comentario no implementa el método.
      */
+    @Override
+    public double calcularImporte() {
+        return 2000.0 + (getPesoKg() * this.tarifaPorKg);
+    }
 }

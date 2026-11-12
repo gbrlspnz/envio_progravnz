@@ -26,4 +26,8 @@ public class EnvioInterurbano extends Envio {
      * Sobrescribir el contrato que el equipo agregue a la clase padre.
      * Este comentario no implementa el método.
      */
+    @Override
+    public double calcularImporte() {
+        return 5000.0 + (getPesoKg() * 1500.0) + (this.distanciaKm * 20.0);
+    }
 }
