@@ -17,6 +17,8 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.table.TableRowSorter;
 import java.awt.*;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -26,6 +28,9 @@ import java.util.Locale;
  * Aplicación principal con interfaz gráfica Java Swing para el Equipo 2: Cotización de envíos.
  */
 public class EnvioApp extends JFrame {
+
+    /** Archivo del catálogo, relativo a la raíz del proyecto (directorio de trabajo). */
+    public static final String RUTA_PREDETERMINADA = "datos" + File.separator + "datos.txt";
 
     private JTextField txtRuta;
     private JTextField txtBuscar;
@@ -307,6 +312,19 @@ public class EnvioApp extends JFrame {
         }
     }
 
+    /**
+     * Carga automática al iniciar: lee datos/datos.txt desde el directorio de trabajo.
+     * Si el archivo no existe, avisa y deja trabajar con una colección vacía;
+     * al guardar se creará el archivo en esa misma ruta.
+     */
+    public void cargaInicial() {
+        File archivo = new File(RUTA_PREDETERMINADA).getAbsoluteFile();
+        txtRuta.setText(archivo.getPath());
+        txtRuta.setForeground(Color.BLACK);
+        cargarDesde(archivo.getPath());
+    }
+
+    /** Botón "Cargar archivo": recarga el archivo indicado en la ruta. */
     private void cargarEnvios() {
         String ruta = txtRuta.getText().trim();
         if (ruta.isEmpty() || ruta.equals("(ningún archivo seleccionado)")) {
@@ -315,6 +333,10 @@ public class EnvioApp extends JFrame {
                     "Sin archivo", JOptionPane.WARNING_MESSAGE);
             return;
         }
+        cargarDesde(ruta);
+    }
+
+    private void cargarDesde(String ruta) {
         try {
             EnvioArchivoManager.ResultadoCarga res = archivoManager.leer(ruta);
             gestor.setEnvios(res.getEnvios());
@@ -322,17 +344,28 @@ public class EnvioApp extends JFrame {
 
             if (res.tieneAdvertencias()) {
                 StringBuilder msj = new StringBuilder("Se cargaron ")
-                        .append(res.getEnvios().size()).append(" envíos válidos.\n\nAdvertencias:\n");
+                        .append(res.getEnvios().size()).append(" envíos válidos.\n\nLíneas omitidas:\n");
                 for (String adv : res.getAdvertencias()) msj.append("• ").append(adv).append("\n");
                 JOptionPane.showMessageDialog(this, msj.toString(),
                         "Advertencias al cargar", JOptionPane.WARNING_MESSAGE);
             }
 
             lblEstado.setText(gestor.getCantidad() + " envíos cargados desde: " + new File(ruta).getName());
-        } catch (Exception ex) {
+        } catch (FileNotFoundException ex) {
+            // Falta el archivo: avisar y trabajar con una colección vacía
+            gestor.limpiar();
+            aplicarFiltros();
             JOptionPane.showMessageDialog(this,
-                    "No se puede cargar el archivo:\n" + ex.getMessage(),
+                    "No se encontró el archivo:\n" + ruta
+                            + "\n\nSe trabajará con una lista vacía. Al guardar se creará el archivo.",
+                    "Archivo no encontrado", JOptionPane.WARNING_MESSAGE);
+            lblEstado.setText("Archivo no encontrado: se trabaja con una lista vacía.");
+        } catch (IOException ex) {
+            // Error de lectura: se informa sin cerrar la aplicación y se conservan los datos en memoria
+            JOptionPane.showMessageDialog(this,
+                    "No se pudo leer el archivo:\n" + ex.getMessage(),
                     "Error de lectura", JOptionPane.ERROR_MESSAGE);
+            lblEstado.setText("Error de lectura: no se modificaron los datos.");
         }
     }
 
@@ -517,6 +550,10 @@ public class EnvioApp extends JFrame {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
         } catch (Exception ignored) { }
 
-        SwingUtilities.invokeLater(() -> new EnvioApp().setVisible(true));
+        SwingUtilities.invokeLater(() -> {
+            EnvioApp app = new EnvioApp();
+            app.setVisible(true);
+            app.cargaInicial(); // lee datos/datos.txt al iniciar
+        });
     }
 }
