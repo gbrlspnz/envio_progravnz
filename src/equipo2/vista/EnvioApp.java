@@ -67,7 +67,7 @@ public class EnvioApp extends JFrame {
 
     public EnvioApp() {
         setTitle("Gestor y Cotizacion de Envios - Equipo 2");
-        setSize(1180, 720);
+        setSize(1200, 720);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
         setLayout(new BorderLayout(10, 10));
@@ -189,27 +189,44 @@ public class EnvioApp extends JFrame {
 
     // Panel derecho: botones de accion y resultados de cotizacion
     private JPanel construirPanelDerecho() {
-        JPanel panel = new JPanel();
-        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
-        panel.setPreferredSize(new Dimension(360, 0));
+        JPanel panel = new JPanel(new GridBagLayout());
+        panel.setPreferredSize(new Dimension(380, 0));
+
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.gridx = 0;
+        gbc.weightx = 1.0;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.anchor = GridBagConstraints.NORTH;
 
         // Botones agregar y eliminar
-        JPanel panelOperaciones = new JPanel(new GridLayout(2, 1, 6, 6));
-        panelOperaciones.setBorder(BorderFactory.createTitledBorder("Operaciones"));
+        JPanel panelOperaciones = new JPanel(new GridLayout(2, 1, 6, 8));
+        panelOperaciones.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createTitledBorder("Operaciones"),
+                new EmptyBorder(8, 12, 12, 12)));
         JButton btnAgregar = new JButton("+ Agregar Envio...");
         JButton btnEliminar = new JButton("- Eliminar Seleccionado");
+        btnAgregar.setPreferredSize(new Dimension(0, 34));
+        btnEliminar.setPreferredSize(new Dimension(0, 34));
         btnAgregar.addActionListener(e -> agregarEnvio());
         btnEliminar.addActionListener(e -> eliminarEnvio());
         panelOperaciones.add(btnAgregar);
         panelOperaciones.add(btnEliminar);
 
+        gbc.gridy = 0;
+        gbc.insets = new Insets(0, 0, 10, 0);
+        panel.add(panelOperaciones, gbc);
+
         // Cotizacion individual (Patron Strategy)
         JPanel panelCotizacion = new JPanel();
         panelCotizacion.setLayout(new BoxLayout(panelCotizacion, BoxLayout.Y_AXIS));
-        panelCotizacion.setBorder(BorderFactory.createTitledBorder("Cotizacion del envio"));
+        panelCotizacion.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createTitledBorder("Cotizacion del envio"),
+                new EmptyBorder(8, 12, 12, 12)));
 
         rbNormal = new JRadioButton("NORMAL (sin descuento)", true);
         rbBeneficio = new JRadioButton("BENEFICIO (10% descuento)", false);
+        rbNormal.setAlignmentX(Component.LEFT_ALIGNMENT);
+        rbBeneficio.setAlignmentX(Component.LEFT_ALIGNMENT);
         ButtonGroup grupoModalidad = new ButtonGroup();
         grupoModalidad.add(rbNormal);
         grupoModalidad.add(rbBeneficio);
@@ -219,65 +236,91 @@ public class EnvioApp extends JFrame {
         rbBeneficio.addActionListener(e -> { estrategiaActual = estrategiaBeneficio; actualizarCalculo(); });
 
         lblDetalleSeleccion = new JLabel("Seleccione envio(s) en la tabla");
-        lblDetalleSeleccion.setFont(new Font("SansSerif", Font.BOLD, 11));
+        lblDetalleSeleccion.setFont(new Font("SansSerif", Font.BOLD, 12));
+        lblDetalleSeleccion.setAlignmentX(Component.LEFT_ALIGNMENT);
+
         lblImporteBase = new JLabel("Importe Base: $0.00");
+        lblImporteBase.setFont(new Font("SansSerif", Font.PLAIN, 12));
+        lblImporteBase.setAlignmentX(Component.LEFT_ALIGNMENT);
+
         lblDescuento = new JLabel("Descuento: $0.00");
+        lblDescuento.setFont(new Font("SansSerif", Font.PLAIN, 12));
+        lblDescuento.setAlignmentX(Component.LEFT_ALIGNMENT);
+
         lblTotal = new JLabel("Total a pagar: $0.00");
-        lblTotal.setFont(new Font("SansSerif", Font.BOLD, 13));
+        lblTotal.setFont(new Font("SansSerif", Font.BOLD, 14));
         lblTotal.setForeground(new Color(0, 102, 0));
+        lblTotal.setAlignmentX(Component.LEFT_ALIGNMENT);
 
         panelCotizacion.add(rbNormal);
+        panelCotizacion.add(Box.createVerticalStrut(4));
         panelCotizacion.add(rbBeneficio);
-        panelCotizacion.add(Box.createVerticalStrut(8));
+        panelCotizacion.add(Box.createVerticalStrut(10));
         panelCotizacion.add(lblDetalleSeleccion);
-        panelCotizacion.add(Box.createVerticalStrut(5));
+        panelCotizacion.add(Box.createVerticalStrut(6));
         panelCotizacion.add(lblImporteBase);
-        panelCotizacion.add(Box.createVerticalStrut(3));
+        panelCotizacion.add(Box.createVerticalStrut(4));
         panelCotizacion.add(lblDescuento);
-        panelCotizacion.add(Box.createVerticalStrut(5));
+        panelCotizacion.add(Box.createVerticalStrut(8));
         panelCotizacion.add(lblTotal);
+
+        gbc.gridy = 1;
+        gbc.insets = new Insets(0, 0, 10, 0);
+        panel.add(panelCotizacion, gbc);
 
         // Suma de seleccion multiple
         JPanel panelSuma = new JPanel();
         panelSuma.setLayout(new BoxLayout(panelSuma, BoxLayout.Y_AXIS));
-        panelSuma.setBorder(BorderFactory.createTitledBorder("Suma de seleccion multiple"));
+        panelSuma.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createTitledBorder("Suma de seleccion multiple"),
+                new EmptyBorder(8, 12, 12, 12)));
 
-        JPanel filaBotonesSel = new JPanel(new GridLayout(1, 2, 6, 0));
+        JPanel filaBotonesSel = new JPanel(new GridLayout(1, 2, 8, 0));
         btnSelTodos = new JButton("Seleccionar todos");
         btnDeselTodos = new JButton("Deseleccionar todos");
         btnSelTodos.addActionListener(e -> tabla.selectAll());
         btnDeselTodos.addActionListener(e -> tabla.clearSelection());
         filaBotonesSel.add(btnSelTodos);
         filaBotonesSel.add(btnDeselTodos);
+        filaBotonesSel.setAlignmentX(Component.LEFT_ALIGNMENT);
+        filaBotonesSel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 32));
 
         lblSumaSeleccion = new JLabel("Envios seleccionados: 0");
-        lblSumaSeleccion.setFont(new Font("SansSerif", Font.BOLD, 11));
+        lblSumaSeleccion.setFont(new Font("SansSerif", Font.BOLD, 12));
+        lblSumaSeleccion.setAlignmentX(Component.LEFT_ALIGNMENT);
+
         lblSumaImportes = new JLabel("Suma importes base: $0.00");
+        lblSumaImportes.setFont(new Font("SansSerif", Font.PLAIN, 12));
+        lblSumaImportes.setAlignmentX(Component.LEFT_ALIGNMENT);
+
         lblSumaDescuentos = new JLabel("Suma descuentos: $0.00");
+        lblSumaDescuentos.setFont(new Font("SansSerif", Font.PLAIN, 12));
+        lblSumaDescuentos.setAlignmentX(Component.LEFT_ALIGNMENT);
+
         lblSumaTotal = new JLabel("Total a pagar: $0.00");
-        lblSumaTotal.setFont(new Font("SansSerif", Font.BOLD, 13));
+        lblSumaTotal.setFont(new Font("SansSerif", Font.BOLD, 14));
         lblSumaTotal.setForeground(new Color(140, 0, 0));
+        lblSumaTotal.setAlignmentX(Component.LEFT_ALIGNMENT);
 
-        JPanel wrapBotones = new JPanel(new BorderLayout());
-        wrapBotones.add(filaBotonesSel);
-        wrapBotones.setMaximumSize(new Dimension(Integer.MAX_VALUE, 32));
-
-        panelSuma.add(wrapBotones);
-        panelSuma.add(Box.createVerticalStrut(8));
+        panelSuma.add(filaBotonesSel);
+        panelSuma.add(Box.createVerticalStrut(10));
         panelSuma.add(lblSumaSeleccion);
-        panelSuma.add(Box.createVerticalStrut(4));
-        panelSuma.add(lblSumaImportes);
-        panelSuma.add(Box.createVerticalStrut(3));
-        panelSuma.add(lblSumaDescuentos);
         panelSuma.add(Box.createVerticalStrut(6));
+        panelSuma.add(lblSumaImportes);
+        panelSuma.add(Box.createVerticalStrut(4));
+        panelSuma.add(lblSumaDescuentos);
+        panelSuma.add(Box.createVerticalStrut(8));
         panelSuma.add(lblSumaTotal);
 
-        panel.add(panelOperaciones);
-        panel.add(Box.createVerticalStrut(8));
-        panel.add(panelCotizacion);
-        panel.add(Box.createVerticalStrut(8));
-        panel.add(panelSuma);
-        panel.add(Box.createVerticalGlue());
+        gbc.gridy = 2;
+        gbc.insets = new Insets(0, 0, 0, 0);
+        panel.add(panelSuma, gbc);
+
+        // Relleno inferior para mantener los recuadros alineados arriba
+        gbc.gridy = 3;
+        gbc.weighty = 1.0;
+        gbc.fill = GridBagConstraints.BOTH;
+        panel.add(Box.createGlue(), gbc);
 
         return panel;
     }
