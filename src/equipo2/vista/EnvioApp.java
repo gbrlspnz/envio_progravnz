@@ -67,7 +67,7 @@ public class EnvioApp extends JFrame {
 
     public EnvioApp() {
         setTitle("Gestor y Cotizacion de Envios - Equipo 2");
-        setSize(1100, 700);
+        setSize(1180, 720);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
         setLayout(new BorderLayout(10, 10));
@@ -191,7 +191,7 @@ public class EnvioApp extends JFrame {
     private JPanel construirPanelDerecho() {
         JPanel panel = new JPanel();
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
-        panel.setPreferredSize(new Dimension(320, 0));
+        panel.setPreferredSize(new Dimension(360, 0));
 
         // Botones agregar y eliminar
         JPanel panelOperaciones = new JPanel(new GridLayout(2, 1, 6, 6));
@@ -222,7 +222,7 @@ public class EnvioApp extends JFrame {
         lblDetalleSeleccion.setFont(new Font("SansSerif", Font.BOLD, 11));
         lblImporteBase = new JLabel("Importe Base: $0.00");
         lblDescuento = new JLabel("Descuento: $0.00");
-        lblTotal = new JLabel("Total: $0.00");
+        lblTotal = new JLabel("Total a pagar: $0.00");
         lblTotal.setFont(new Font("SansSerif", Font.BOLD, 13));
         lblTotal.setForeground(new Color(0, 102, 0));
 
@@ -254,8 +254,8 @@ public class EnvioApp extends JFrame {
         lblSumaSeleccion.setFont(new Font("SansSerif", Font.BOLD, 11));
         lblSumaImportes = new JLabel("Suma importes base: $0.00");
         lblSumaDescuentos = new JLabel("Suma descuentos: $0.00");
-        lblSumaTotal = new JLabel("TOTAL A PAGAR: $0.00");
-        lblSumaTotal.setFont(new Font("SansSerif", Font.BOLD, 14));
+        lblSumaTotal = new JLabel("Total a pagar: $0.00");
+        lblSumaTotal.setFont(new Font("SansSerif", Font.BOLD, 13));
         lblSumaTotal.setForeground(new Color(140, 0, 0));
 
         JPanel wrapBotones = new JPanel(new BorderLayout());
@@ -469,31 +469,9 @@ public class EnvioApp extends JFrame {
             lblDetalleSeleccion.setText("Seleccione envio(s) en la tabla");
             lblImporteBase.setText("Importe Base: $0.00");
             lblDescuento.setText("Descuento: $0.00");
-            lblTotal.setText("Total: $0.00");
+            lblTotal.setText("Total a pagar: $0.00");
             limpiarSuma();
             return;
-        }
-
-        if (cantidad == 1) {
-            int filaModelo = tabla.convertRowIndexToModel(filasVista[0]);
-            Envio e = modelo.getEnvio(filaModelo);
-            if (e == null) return;
-
-            // Uso de polimorfismo y patron Strategy
-            double base = e.calcularImporte();
-            double descuento = estrategiaActual.calcularDescuento(base);
-            double total = estrategiaActual.calcularTotal(base);
-            String tipo = (e instanceof EnvioLocal) ? "LOCAL" : "INTERURBANO";
-
-            lblDetalleSeleccion.setText(String.format("Codigo: %s (%s)", e.getCodigo(), tipo));
-            lblImporteBase.setText(String.format(Locale.US, "Importe Base: $%.2f", base));
-            lblDescuento.setText(String.format(Locale.US, "Descuento (%s): $%.2f", estrategiaActual.getNombre(), descuento));
-            lblTotal.setText(String.format(Locale.US, "Total: $%.2f", total));
-        } else {
-            lblDetalleSeleccion.setText(cantidad + " envios seleccionados");
-            lblImporteBase.setText("-");
-            lblDescuento.setText("-");
-            lblTotal.setText("Ver suma a la derecha ->");
         }
 
         // Acumula la suma de todos los envios seleccionados
@@ -510,17 +488,35 @@ public class EnvioApp extends JFrame {
             sumaTotal += estrategiaActual.calcularTotal(base);
         }
 
+        if (cantidad == 1) {
+            int filaModelo = tabla.convertRowIndexToModel(filasVista[0]);
+            Envio e = modelo.getEnvio(filaModelo);
+            if (e == null) return;
+
+            String tipo = (e instanceof EnvioLocal) ? "LOCAL" : "INTERURBANO";
+            lblDetalleSeleccion.setText(String.format("Envio: %s (%s)", e.getCodigo(), tipo));
+            lblImporteBase.setText(String.format(Locale.US, "Importe Base: $%.2f", sumaBase));
+            lblDescuento.setText(String.format(Locale.US, "Descuento (%s): $%.2f", estrategiaActual.getNombre(), sumaDescuento));
+            lblTotal.setText(String.format(Locale.US, "Total a pagar: $%.2f", sumaTotal));
+        } else {
+            // Si hay multiples envios seleccionados, mostramos el consolidado
+            lblDetalleSeleccion.setText(cantidad + " envios seleccionados");
+            lblImporteBase.setText(String.format(Locale.US, "Importe Base: $%.2f", sumaBase));
+            lblDescuento.setText(String.format(Locale.US, "Descuento (%s): $%.2f", estrategiaActual.getNombre(), sumaDescuento));
+            lblTotal.setText(String.format(Locale.US, "Total a pagar: $%.2f", sumaTotal));
+        }
+
         lblSumaSeleccion.setText("Envios seleccionados: " + cantidad);
         lblSumaImportes.setText(String.format(Locale.US, "Suma importes base: $%.2f", sumaBase));
         lblSumaDescuentos.setText(String.format(Locale.US, "Suma descuentos: $%.2f", sumaDescuento));
-        lblSumaTotal.setText(String.format(Locale.US, "TOTAL A PAGAR: $%.2f", sumaTotal));
+        lblSumaTotal.setText(String.format(Locale.US, "Total a pagar: $%.2f", sumaTotal));
     }
 
     private void limpiarSuma() {
         lblSumaSeleccion.setText("Envios seleccionados: 0");
         lblSumaImportes.setText("Suma importes base: $0.00");
         lblSumaDescuentos.setText("Suma descuentos: $0.00");
-        lblSumaTotal.setText("TOTAL A PAGAR: $0.00");
+        lblSumaTotal.setText("Total a pagar: $0.00");
     }
 
     public static void main(String[] args) {
